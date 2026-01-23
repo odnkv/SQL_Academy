@@ -49,7 +49,7 @@ HAVING COUNT(DISTINCT p.name) = 2;
 `city`
 `warehouse_count`
 
-<img width="556" height="484" alt="image" src="https://github.com/user-attachments/assets/4976628b-b1d1-4b1d-b2ad-7d61a02bda5b" />
+<img width="278" height="242" alt="image" src="https://github.com/user-attachments/assets/4976628b-b1d1-4b1d-b2ad-7d61a02bda5b" />
 
 ```sql
 
@@ -69,7 +69,7 @@ HAVING COUNT(warehouse_id) > 80
 Поля в результирующей таблице:
 `income_from_female`
 
-<img width="598" height="408" alt="image" src="https://github.com/user-attachments/assets/e0568f9d-aaf3-42da-8f7d-8ae2d4bd6a88" />
+<img width="299" height="204" alt="image" src="https://github.com/user-attachments/assets/e0568f9d-aaf3-42da-8f7d-8ae2d4bd6a88" />
 
 ```sql
 
@@ -88,7 +88,7 @@ WHERE user_gender = 'f'
 `user_id`
 `item`
 
-<img width="660" height="388" alt="image" src="https://github.com/user-attachments/assets/0b095089-7ebe-4223-9f2e-e7ab5ce84132" />
+<img width="330" height="194" alt="image" src="https://github.com/user-attachments/assets/0b095089-7ebe-4223-9f2e-e7ab5ce84132" />
 
 ```sql
 
