@@ -330,3 +330,96 @@ GROUP BY status,
 	member_name
 
 ```
+
+#### Задание #21
+##### Товары, купленные более одного раза
+Определить товары, которые покупали более 1 раза
+Поля в результирующей таблице:
+`good_name`
+
+```sql
+
+SELECT g.good_name
+FROM Goods AS g
+	JOIN Payments AS p ON g.good_id = p.good
+GROUP BY g.good_name
+HAVING COUNT(p.amount) > 1
+
+```
+
+#### Задание #22
+##### Имена всех матерей
+Найти имена всех матерей (mother)
+Поля в результирующей таблице:
+`member_name`
+
+
+```sql
+
+SELECT member_name
+FROM FamilyMembers
+WHERE status = 'mother'
+
+```
+
+#### Задание #23
+##### Самый дорогой деликатес
+Найдите самый дорогой деликатес (delicacies) и выведите его цену
+Поля в результирующей таблице:
+`good_name`
+`unit_price`
+
+
+```sql
+
+SELECT g.good_name,
+	p.unit_price
+FROM Goods AS g
+	JOIN GoodTypes AS gt ON g.type = gt.good_type_id
+	JOIN Payments AS p ON g.good_id = p.good
+WHERE good_type_name = 'delicacies'
+ORDER BY unit_price DESC
+LIMIT 1
+
+```
+
+#### Задание #24
+##### Кто и сколько потратил в июне 2005 года
+Определить, кто и сколько потратил в июне 2005
+Используйте конструкцию "as costs" для отображения затраченной суммы членом семьи. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`member_name`
+`costs`
+
+
+```sql
+
+SELECT member_name,
+	SUM(amount * unit_price) AS costs
+FROM FamilyMembers AS fm
+	JOIN Payments AS p ON fm.member_id = p.family_member
+WHERE DATE_PART('year', date) = 2005
+	AND DATE_PART('month', date) = 06
+GROUP by member_name
+
+```
+
+#### Задание #25
+##### Товары, не купленные в 2005 году
+Определить, какие товары не покупались в 2005 году
+Все доступные к покупке продукты находятся в таблице Goods
+Поля в результирующей таблице:
+`good_name`
+
+
+```sql
+
+SELECT good_name
+FROM Goods
+WHERE good_id NOT IN (
+		SELECT DISTINCT good
+		FROM Payments
+		WHERE DATE_PART('year', date) = 2005
+	)
+
+```
