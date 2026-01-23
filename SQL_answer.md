@@ -1,3 +1,5 @@
+<img width="502" height="146" alt="image" src="https://github.com/user-attachments/assets/6886b29a-d8ce-4371-8900-a442979f7495" />
+
 #### Задание #1
 ##### Имена всех людей
 Вывести имена всех людей, которые есть в базе данных авиакомпаний
@@ -247,6 +249,9 @@ ORDER BY count DESC,
 	name ASC
 
 ```
+
+
+<img width="488" height="151" alt="image" src="https://github.com/user-attachments/assets/a39ce52c-b335-4530-9fda-4e1e3515e908" />
 
 #### Задание #17
 ##### Траты членов семьи в 2005 году
