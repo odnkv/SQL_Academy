@@ -142,3 +142,186 @@ FROM Trip
 WHERE time_out BETWEEN '1900-01-01 10:00:00' AND '1900-01-01 14:00:00'
 
 ```
+
+#### Задание #11
+##### Пассажиры с самым длинным ФИО
+Выведите пассажиров с самым длинным ФИО. Пробелы, дефисы и точки считаются частью имени.
+Поля в результирующей таблице:
+`name`
+
+```sql
+
+SELECT name
+FROM Passenger
+WHERE LENGTH(name) = (
+		SELECT MAX(LENGTH(name))
+		FROM passenger
+	)
+
+```
+
+#### Задание #12
+##### Количество пассажиров на рейсах
+Выведите идентификаторы всех рейсов и количество пассажиров на них. Обратите внимание, что на каких-то рейсах пассажиров может не быть. В этом случае выведите число "0".
+Используйте конструкцию "as count" для агрегатной функции подсчета количества пассажиров. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`id`
+`count`
+
+```sql
+
+SELECT t.id,
+	COUNT(pt.passenger) AS COUNT
+FROM Trip AS t
+	LEFT JOIN Pass_in_trip AS pt ON t.id = pt.trip
+GROUP BY t.id
+
+```
+
+#### Задание #13
+##### Полные тёзки
+Вывести имена людей, у которых есть полный тёзка среди пассажиров
+Поля в результирующей таблице:
+`name`
+
+```sql
+
+SELECT name
+FROM Passenger
+GROUP BY name
+HAVING COUNT(name) >= 2
+
+```
+
+#### Задание #14
+##### Города, которые посетил Bruce Willis
+В какие города летал Bruce Willis
+Поля в результирующей таблице:
+`town_to`
+
+```sql
+
+SELECT town_to
+FROM Passenger AS p
+	JOIN Pass_in_trip AS pt ON p.id = pt.passenger
+	JOIN Trip AS t ON pt.trip = t.id
+WHERE name = 'Bruce Willis'
+
+```
+
+#### Задание #15
+##### Прибытие Steve Martin в Лондон
+Выведите идентификатор пассажира Стив Мартин (Steve Martin) и дату и время его прилёта в Лондон (London)
+Поля в результирующей таблице:
+`id`
+`time_in`
+
+```sql
+
+SELECT p.id,
+	t.time_in
+FROM Passenger AS p
+	JOIN Pass_in_trip AS pt ON p.id = pt.passenger
+	JOIN Trip AS t ON pt.trip = t.id
+WHERE p.name = 'Steve Martin'
+	AND t.town_to = 'London'
+
+```
+
+#### Задание #16
+##### Сортировка пассажиров по количеству полетов
+Вывести отсортированный по количеству перелетов (по убыванию) и имени (по возрастанию) список пассажиров, совершивших хотя бы 1 полет.
+Используйте конструкцию "as count" для агрегатной функции подсчета количества перелетов. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`name`
+`count`
+
+```sql
+
+SELECT name,
+	COUNT(trip) AS count
+FROM Passenger AS p
+	JOIN Pass_in_trip AS pt ON p.id = pt.passenger
+GROUP BY name
+ORDER BY count DESC,
+	name ASC
+
+```
+
+#### Задание #17
+##### Траты членов семьи в 2005 году
+Определить, сколько потратил в 2005 году каждый из членов семьи. В результирующей выборке не выводите тех членов семьи, которые ничего не потратили.
+Используйте конструкцию "as costs" для отображения затраченной суммы членом семьи. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`member_name`
+`status`
+`costs`
+
+```sql
+
+SELECT member_name,
+	status,
+	SUM(p.amount * p.unit_price) AS costs
+FROM FamilyMembers AS f
+	JOIN Payments AS p ON f.member_id = p.family_member
+WHERE DATE_PART('year', date) = '2005'
+GROUP BY member_name,
+	status
+
+```
+
+#### Задание #18
+##### Самый старший человек
+Выведите имя самого старшего человека. Если таких несколько, то выведите их всех.
+Поля в результирующей таблице:
+`member_name`
+
+```sql
+
+SELECT member_name
+FROM FamilyMembers
+ORDER BY birthday
+LIMIT 1
+
+```
+
+#### Задание #19
+##### Кто покупал картошку
+Определить, кто из членов семьи покупал картошку (potato)
+Поля в результирующей таблице:
+`status`
+
+```sql
+
+SELECT status
+FROM FamilyMembers AS fm
+	JOIN Payments AS p ON fm.member_id = p.family_member
+	JOIN Goods AS g ON p.good = g.good_id
+WHERE good_name = 'potato'
+GROUP BY status
+
+```
+
+#### Задание #20
+##### Траты на развлечения
+Сколько и кто из семьи потратил на развлечения (entertainment). Вывести статус в семье, имя, сумму
+Используйте конструкцию "as costs" для отображения затраченной суммы членом семьи. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`status`
+`member_name`
+`costs`
+
+```sql
+
+SELECT status,
+	member_name,
+	SUM(amount * unit_price) AS costs
+FROM FamilyMembers AS fm
+	JOIN Payments AS p ON fm.member_id = p.family_member
+	JOIN Goods AS g ON p.good = g.good_id
+	JOIN GoodTypes AS gt ON g.type = gt.good_type_id
+WHERE good_type_name = 'entertainment'
+GROUP BY status,
+	member_name
+
+```
