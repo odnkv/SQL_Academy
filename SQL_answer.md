@@ -679,3 +679,759 @@ WHERE last_name = 'Romashkin'
 	AND middle_name LIKE 'P%'
 
 ```
+
+#### Задание #41
+##### Начало четвёртого занятия
+Выясните, во сколько по расписанию начинается четвёртое занятие.
+Поля в результирующей таблице:
+`start_pair`
+
+```sql
+
+SELECT start_pair
+FROM Timepair
+WHERE id = 4
+
+```
+
+#### Задание #42
+##### Время, проведённое в школе
+Сколько времени обучающийся будет находиться в школе, учась со 2-го по 4-ый уч. предмет?
+Используйте конструкцию "as time" для указания разницы во времени. Это необходимо для корректной проверки.
+Результат должен быть в формате HH:MM:SS
+Поля в результирующей таблице:
+`time`
+
+```sql
+
+SELECT DISTINCT (
+		(
+			SELECT end_pair
+			FROM Timepair
+			WHERE id = 4
+		) - (
+			SELECT start_pair
+			FROM Timepair
+			WHERE id = 2
+		)
+	) AS time
+FROM Timepair
+
+```
+
+#### Задание #43
+##### Преподаватели физкультуры
+Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Отсортируйте преподавателей по фамилии в алфавитном порядке.
+Поля в результирующей таблице:
+`last_name`
+
+```sql
+
+SELECT last_name
+FROM Subject AS s
+	JOIN Schedule AS se ON s.id = se.subject
+	JOIN Teacher AS t ON se.teacher = t.id
+WHERE name = 'Physical Culture'
+ORDER BY last_name ASC
+
+```
+
+#### Задание #44
+##### Максимальный возраст в 10 классах
+Найдите максимальный возраст (количество лет) среди обучающихся 10 классов на сегодняшний день. Для получения текущих даты и времени используйте функцию NOW().
+Используйте конструкцию "as max_year" для указания максимального возраста в годах. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`max_year`
+
+```sql
+
+SELECT EXTRACT(
+		YEAR
+		FROM AGE(NOW(), birthday)
+	) AS max_year
+FROM Student AS s
+	JOIN Student_in_class AS sc ON s.id = sc.student
+	JOIN Class AS c ON sc.class = c.id
+WHERE c.name LIKE '10%'
+ORDER BY EXTRACT(
+		YEAR
+		FROM AGE(NOW(), birthday)
+	) DESC
+LIMIT 1
+
+```
+
+#### Задание #45
+##### Самые используемые кабинеты
+Какие кабинеты чаще всего использовались для проведения занятий? Выведите те, которые использовались максимальное количество раз.
+Поля в результирующей таблице:
+`classroom`
+
+```sql
+
+SELECT classroom
+FROM Schedule
+GROUP BY classroom
+HAVING COUNT(classroom) = (
+		SELECT COUNT(*) AS count
+		FROM Schedule
+		GROUP BY classroom
+		ORDER BY count DESC
+		LIMIT 1
+	)
+
+```
+
+#### Задание #46
+##### Классы преподавателя Krauze
+В каких классах введет занятия преподаватель "Krauze" ?
+Поля в результирующей таблице:
+`name`
+
+```sql
+
+SELECT DISTINCT c.name
+FROM Teacher AS t
+	JOIN Schedule AS s ON t.id = s.teacher
+	JOIN Class AS c ON s.class = c.id
+WHERE last_name = 'Krauze'
+
+```
+
+#### Задание #47
+##### Занятия Krauze 30 августа 2019
+Сколько занятий провел Krauze 30 августа 2019 г.?
+Используйте конструкцию "as count" для агрегатной функции подсчета числа занятий. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`count`
+
+```sql
+
+SELECT COUNT(number_pair)
+FROM Teacher AS t
+	JOIN Schedule AS s ON t.id = s.teacher
+WHERE last_name = 'Krauze'
+	AND date = '2019-08-30'
+
+```
+
+#### Задание #48
+##### Заполненность классов
+Выведите заполненность классов в порядке убывания
+Используйте конструкцию "as count" для агрегатной функции подсчета числа учащихся в классах. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`name`
+`count`
+
+```sql
+
+SELECT name,
+	COUNT(Student) AS count
+FROM Class AS c
+	JOIN Student_in_class AS sc ON c.id = sc.class
+GROUP BY name
+ORDER BY count DESC
+
+```
+
+#### Задание #49
+##### Процент обучающихся в 10 A классе
+Какой процент обучающихся учится в "10 A" классе? Выведите ответ в диапазоне от 0 до 100 с округлением до четырёх знаков после запятой, например, 96.0201.
+Используйте конструкцию "as percent" для представления результата вычисления. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`percent`
+
+```sql
+
+SELECT ROUND(
+		COUNT(*) * 100.0 / (
+			SELECT Count(*)
+			FROM Student_in_class
+		),
+		4
+	) AS percent
+FROM Student_in_class AS sc
+	JOIN Class AS c ON sc.class = c.id
+WHERE c.name = '10 A'
+
+```
+
+#### Задание #50
+##### Процент родившихся в 2000 году
+Какой процент обучающихся родился в 2000 году? Результат округлить до целого в меньшую сторону.
+Используйте конструкцию "as percent" для указания процента. Это необходимо для корректной проверки.
+Поля в результирующей таблице:
+`percent`
+
+```sql
+
+SELECT FLOOR(
+		COUNT(*) * 100 / (
+			SELECT Count(*)
+			FROM Student
+		)
+	) AS percent
+FROM Student
+WHERE (DATE_PART('year', birthday) = 2000)
+
+```
+
+#### Задание #51
+##### Добавить товар "Cheese"
+Добавьте товар с именем "Cheese" и типом "food" в список товаров (Goods).
+В качестве первичного ключа (good_id) укажите количество записей в таблице + 1.
+
+```sql
+
+INSERT INTO Goods (good_id, good_name, type)
+VALUES (19, 'Cheese', 2)
+
+```
+
+#### Задание #52
+##### Добавить тип товара "auto"
+Добавьте в список типов товаров (GoodTypes) новый тип "auto".
+В качестве первичного ключа (good_type_id) укажите количество записей в таблице + 1.
+
+```sql
+
+INSERT INTO GoodTypes (good_type_id, good_type_name)
+VALUES (
+		(
+			SELECT COUNT(*) + 1
+			FROM GoodTypes
+		),
+		'auto'
+	)
+
+```
+
+#### Задание #53
+##### Изменить имя на "Andie Anthony"
+Измените имя "Andie Quincey" на новое "Andie Anthony".
+
+```sql
+
+UPDATE FamilyMembers
+SET member_name = 'Andie Anthony'
+WHERE member_name = 'Andie Quincey'
+
+```
+
+#### Задание #54
+##### Удалить членов семьи Quincey
+Удалить всех членов семьи с фамилией "Quincey".
+
+```sql
+
+DELETE FROM FamilyMembers
+WHERE member_name LIKE '%Quincey'
+
+```
+
+#### Задание #55
+##### Удалить компании с наименьшим числом рейсов
+Удалить компании, совершившие наименьшее количество рейсов.
+
+```sql
+
+DELETE FROM Company
+WHERE id IN (
+		SELECT company
+		FROM Trip
+		GROUP BY company
+		HAVING COUNT(*) = (
+				SELECT COUNT(*) AS count
+				FROM Trip
+				GROUP BY company
+				ORDER BY count
+				LIMIT 1
+			)
+	);
+
+```
+
+#### Задание #56
+##### Удалить перелеты из Москвы
+Удалить все перелеты, совершенные из Москвы (Moscow).
+
+```sql
+
+DELETE FROM Trip
+WHERE town_from = 'Moscow'
+
+```
+
+#### Задание #57
+##### Перенести расписание на 30 мин
+Перенести расписание всех занятий на 30 мин. вперед.
+
+```sql
+
+UPDATE Timepair
+SET start_pair = start_pair + '00:30:00',
+	end_pair = end_pair + '00:30:00'
+
+```
+
+#### Задание #58
+##### Добавить отзыв от George Clooney
+Добавить отзыв с рейтингом 5 на жилье, находящиеся по адресу "11218, Friel Place, New York", от имени "George Clooney"
+В качестве первичного ключа (id) укажите количество записей в таблице + 1.
+Резервация комнаты, на которую вам нужно оставить отзыв, уже была сделана, нужно лишь ее найти.
+
+```sql
+
+INSERT INTO Reviews (id, reservation_id, rating)
+VALUES (
+		(
+			SELECT COUNT(*) + 1
+			FROM Reviews
+		),
+		(
+			SELECT r.id
+			FROM Reservations AS r
+				JOIN Rooms AS rs ON r.room_id = rs.id
+				JOIN Users AS u ON r.user_id = u.id
+			WHERE address = '11218, Friel Place, New York'
+				AND name = 'George Clooney'
+		),
+		5
+	)
+
+```
+
+#### Задание #59
+##### Пользователи с белорусским номером
+Вывести пользователей,указавших Белорусский номер телефона ? Телефонный код Белоруссии +375.
+Поля в результирующей таблице:
+`*`
+
+```sql
+
+SELECT *
+FROM Users
+WHERE phone_number LIKE '+375%'
+
+```
+
+#### Задание #60
+##### Преподаватели в 11-ых классах
+Выведите идентификаторы преподавателей, которые хотя бы один раз за всё время преподавали в каждом из одиннадцатых классов.
+Поля в результирующей таблице:
+`teacher`
+
+```sql
+
+SELECT teacher
+FROM Schedule AS s
+	JOIN Class AS c ON s.class = c.id
+WHERE c.name LIKE '11%'
+GROUP BY teacher
+HAVING COUNT(DISTINCT name) > 1
+
+```
+
+#### Задание #61
+##### Комнаты, зарезервированные на 12-й неделе 2020 года
+Выведите список комнат, которые были зарезервированы хотя бы на одни сутки в 12-ую неделю 2020 года. В данной задаче в качестве одной недели примите период из семи дней, первый из которых начинается 1 января 2020 года. Например, первая неделя года — 1–7 января, а третья — 15–21 января.
+Поля в результирующей таблице:
+`Rooms.*`
+
+```sql
+
+SELECT r.*
+FROM Rooms AS r
+	JOIN Reservations AS rs ON rs.room_id = r.id
+WHERE DATE_PART('year', start_date) = 2020
+	AND DATE_PART('week', start_date) = 12
+	OR DATE_PART('week', end_date) = 12
+
+```
+
+#### Задание #62
+##### Рейтинг доменов 2-го уровня
+Вывести в порядке убывания популярности доменные имена 2-го уровня, используемые пользователями для электронной почты. Полученный результат необходимо дополнительно отсортировать по возрастанию названий доменных имён.
+Для эл. почты index@gmail.com доменным именем 2-го уровня будет gmail.com.
+Поля в результирующей таблице:
+`domain`
+`count`
+
+```sql
+
+SELECT SPLIT_PART(email, '@', 2) AS domain,
+	COUNT(*) AS count
+FROM Users
+GROUP BY domain
+ORDER BY count DESC,
+	domain ASC
+
+```
+
+#### Задание #63
+##### Сортировка имён обучающихся
+Выведите отсортированный список (по возрастанию) фамилий и имен студентов в виде Фамилия.И.
+Поля в результирующей таблице:
+`name`
+
+```sql
+
+SELECT CONCAT(last_name, '.', LEFT(first_name, 1), '.') AS name
+FROM Student
+ORDER BY name ASC
+
+```
+
+#### Задание #64
+##### Количество бронирований по месяцам
+Вывести количество бронирований по каждому месяцу каждого года, в которых было хотя бы 1 бронирование. Результат отсортируйте в порядке возрастания даты бронирования.
+Используйте конструкцию "as year", "as month" и "as amount" для вывода года и месяца бронирования, количества таких бронирований соответственно.
+Поля в результирующей таблице:
+`year`
+`month`
+`amount`
+
+```sql
+
+SELECT DATE_PART('year', start_date) AS year,
+	DATE_PART('month', start_date) AS month,
+	COUNT(*) AS amount
+FROM Reservations AS r
+GROUP BY DATE_PART('year', start_date),
+	DATE_PART('month', start_date)
+ORDER BY DATE_PART('year', start_date),
+	DATE_PART('month', start_date)
+
+```
+
+#### Задание #65
+##### Рейтинг арендованных комнат
+Необходимо вывести рейтинг для комнат, которые хоть раз арендовали, как среднее значение рейтинга отзывов округленное до целого вниз.
+Используйте конструкцию "as rating" для вывода рейтинга.
+Поля в результирующей таблице:
+`room_id`
+`rating`
+
+```sql
+
+SELECT room_id,
+	FLOOR(AVG(rating)) AS rating
+FROM Reviews AS r
+	JOIN Reservations AS rs ON r.reservation_id = rs.id
+GROUP BY room_id
+
+```
+
+#### Задание #66
+##### Комнаты со всеми удобствами
+Вывести список комнат со всеми удобствами (наличие ТВ, интернета, кухни и кондиционера), а также общее количество дней и сумму за все дни аренды каждой из таких комнат.
+Используйте конструкции "as days" и "as total_fee" для вывода количества дней и суммы аренды, соответственно.
+Если комната не сдавалась, то количество дней и сумму вывести как 0.
+Поля в результирующей таблице:
+`home_type`
+`address`
+`days`
+`total_fee`
+
+```sql
+
+SELECT home_type,
+	address,
+	COALESCE(
+		SUM(
+			DATE_PART('day', rs.end_date - rs.start_date)::integer
+		),
+		0
+	) AS days,
+	COALESCE(SUM(total), 0) AS total_fee
+FROM Rooms AS r
+	LEFT JOIN Reservations AS rs ON r.id = rs.room_id
+WHERE has_tv = TRUE
+	AND has_internet = TRUE
+	AND has_kitchen = TRUE
+	AND has_air_con = TRUE
+GROUP BY home_type,
+	address
+
+```
+
+#### Задание #67
+##### Время отлёта и прилёта
+Вывести время отлета и время прилета для каждого перелета в формате "ЧЧ:ММ, ДД.ММ - ЧЧ:ММ, ДД.ММ", где часы и минуты с ведущим нулем, а день и месяц без.
+Используйте конструкции "as flight_time" для полученной строки с датами отлета и прилета.
+Поля в результирующей таблице:
+`flight_time`
+
+```sql
+
+SELECT CONCAT(
+		TO_CHAR(time_out, 'HH24:MI, FMDD.FMMM'),
+		' - ',
+		TO_CHAR(time_in, 'HH24:MI, FMDD.FMMM')
+	) AS flight_time
+FROM Trip
+
+```
+
+#### Задание #68
+##### Последний арендатор комнаты
+Для каждой комнаты, которую снимали как минимум 1 раз, найдите имя человека, снимавшего ее последний раз, и дату, когда он выехал
+Используйте конструкцию "as room_id" для вывода идентификатора комнаты
+Поля в результирующей таблице:
+`room_id`
+`name`
+`end_date`
+
+```sql
+
+WITH max_dates AS (
+	SELECT room_id,
+		MAX(end_date) as end_date
+	FROM Reservations AS rs
+	GROUP BY room_id
+)
+SELECT rs.room_id,
+	name,
+	rs.end_date
+FROM Reservations AS rs
+	JOIN Users AS u ON rs.user_id = u.id
+	JOIN max_dates AS md ON rs.room_id = md.room_id
+	AND rs.end_date = md.end_date
+
+```
+
+#### Задание #69
+##### Заработок владельцев комнат
+Вывести идентификаторы всех владельцев комнат, что размещены на сервисе бронирования жилья и сумму, которую они заработали
+Используйте конструкцию "as owner_id" и "as total_earn" для вывода идентификаторов владельцев и заработанной суммы соответственно.
+Поля в результирующей таблице:
+`owner_id`
+`total_earn`
+
+```sql
+
+SELECT owner_id,
+	COALESCE(SUM(total), 0) AS total_earn
+FROM Rooms AS R
+	LEFT JOIN Reservations AS rs ON r.id = rs.room_id
+GROUP BY owner_id
+
+```
+
+#### Задание #70
+##### Категоризация жилья по цене
+Необходимо категоризовать жилье на economy, comfort, premium по цене соответственно <= 100, 100 < цена < 200, >= 200. В качестве результата вывести таблицу с названием категории и количеством жилья, попадающего в данную категорию
+Используйте конструкцию "as category" и "as count" для вывода названия категории и количества такого жилья соответственно.
+Поля в результирующей таблице:
+`category`
+`count`
+
+```sql
+
+SELECT CASE
+		WHEN price <= 100 THEN 'economy'
+		WHEN price > 100
+		AND price < 200 THEN 'comfort'
+		WHEN price >= 200 THEN 'premium'
+	END AS category,
+	COUNT(*) AS count
+FROM Rooms
+GROUP BY category
+
+```
+
+#### Задание #71
+##### Процент активных пользователей
+Найдите какой процент пользователей, зарегистрированных на сервисе бронирования, хоть раз арендовали или сдавали в аренду жилье. Результат округлите до сотых.
+Используйте конструкцию "as percent" для вывода процента активных пользователей. Пример формата ответа: 65.23
+Поля в результирующей таблице:
+`percent`
+
+```sql
+
+SELECT ROUND(
+		COUNT(DISTINCT active_id) * 100.0 / COUNT(DISTINCT u.id),
+		2
+	) AS percent
+FROM Users AS u
+	LEFT JOIN (
+		SELECT user_id AS active_id
+		FROM Reservations
+		UNION
+		SELECT DISTINCT owner_id AS active_id
+		FROM Rooms AS r
+			INNER JOIN Reservations AS rs ON r.id = rs.room_id
+	) AS active ON u.id = active.active_id;
+
+```
+
+#### Задание #72
+##### Средняя цена бронирования
+Выведите среднюю цену бронирования за сутки для каждой из комнат, которую бронировали хотя бы один раз. Среднюю цену необходимо округлить до целого значения вверх.
+Используйте конструкцию "as avg_price" для вывода средней стоимости бронирования для комнат
+Поля в результирующей таблице:
+`room_id`
+`avg_price`
+
+```sql
+
+SELECT room_id,
+	CEIL(AVG(price)) AS avg_price
+FROM Reservations
+GROUP BY room_id
+
+```
+
+#### Задание #73
+##### Комнаты, арендованные нечетное число раз
+Выведите id тех комнат, которые арендовали нечетное количество раз
+Используйте конструкцию "as count" для вывода количество сколько раз комнату брали в аренду
+Поля в результирующей таблице:
+`room_id`
+`count`
+
+```sql
+
+SELECT room_id,
+	count(*) AS count
+FROM Rooms AS r
+	JOIN Reservations AS rs ON r.id = rs.room_id
+GROUP BY room_id
+HAVING MOD(count(*), 2) <> 0
+
+```
+
+#### Задание #74
+##### Наличие интернета в помещении
+Выведите идентификатор и признак наличия интернета в помещении. Если интернет в сдаваемом жилье присутствует, то выведите «YES», иначе «NO».
+Используйте конструкцию "AS has_internet" для вывода признака наличия интернета в помещении.
+Поля в результирующей таблице:
+`id`
+`has_internet`
+
+```sql
+
+SELECT id,
+	CASE
+		WHEN has_internet = 'true' THEN 'YES'
+		ELSE 'NO'
+	END AS has_internet
+FROM Rooms AS r
+
+```
+
+#### Задание #75
+##### Студенты, рожденные в мае
+Выведите фамилию, имя и дату рождения студентов, кто был рожден в мае.
+Поля в результирующей таблице:
+`last_name`
+`first_name`
+`birthday`
+
+```sql
+
+SELECT last_name,
+	first_name,
+	birthday
+FROM Student
+WHERE DATE_PART('month', birthday) = 5
+
+```
+
+#### Задание #76
+##### Статус пользователя: собственник/арендатор
+Вывести имена всех пользователей сервиса бронирования жилья, а также два признака: является ли пользователь собственником какого-либо жилья (is_owner) и является ли пользователь арендатором (is_tenant). В случае наличия у пользователя признака необходимо вывести в соответствующее поле 1, иначе 0.
+Используйте конструкцию "AS is_owner" для отображения признака собственника жилья.
+Используйте конструкцию "AS is_tenant" для отображения признака арендатора
+Поля в результирующей таблице:
+`name`
+`is_owner`
+`is_tenant`
+
+```sql
+
+SELECT name,
+	CASE
+		WHEN id IN (
+			SELECT owner_id
+			FROM Rooms
+		) THEN 1
+		ELSE 0
+	END AS is_owner,
+	CASE
+		WHEN id IN (
+			SELECT user_id
+			FROM Reservations
+		) THEN 1
+		ELSE 0
+	END AS is_tenant
+FROM Users;
+
+```
+
+#### Задание #77
+##### Создать представление "People"
+Создайте представление с именем "People", которое будет содержать список имен (first_name) и фамилий (last_name) всех студентов (Student) и преподавателей(Teacher)
+
+```sql
+
+CREATE VIEW People AS
+SELECT first_name,
+	last_name
+FROM Student
+UNION ALL
+SELECT first_name,
+	last_name
+FROM Teacher;
+
+```
+
+#### Задание #78
+##### Пользователи с почтой hotmail.com
+Выведите всех пользователей с электронной почтой в «hotmail.com»
+Поля в результирующей таблице:
+`*`
+
+```sql
+
+SELECT *
+FROM Users
+WHERE email LIKE '%@hotmail.com'
+
+```
+
+#### Задание #79
+##### Цена со скидкой 10%
+Выведите поля id, home_type, price у всего жилья из таблицы Rooms. Если комната имеет телевизор и интернет одновременно, то в качестве цены в поле price выведите цену, применив скидку 10%.
+Поля в результирующей таблице:
+`id`
+`home_type`
+`price`
+
+```sql
+
+SELECT id,
+	home_type,
+	CASE
+		WHEN has_tv = TRUE
+		AND has_internet = TRUE THEN price * 0.9
+		ELSE price
+	END AS price
+FROM Rooms
+
+```
+
+#### Задание #80
+##### Создать представление "Verified_Users"
+Создайте представление «Verified_Users» с полями id, name и email, которое будет показывает только тех пользователей, у которых подтвержден адрес электронной почты.
+
+```sql
+
+CREATE VIEW Verified_Users AS
+SELECT id,
+	name,
+	email
+FROM Users
+WHERE email_verified_at IS NOT NULL
+
+```
